@@ -34,6 +34,13 @@ export interface ModuleOptions {
   serviceKey: string
 
   /**
+   * Auth flow is on server or client/browser
+   * @default 'server'
+   * @type 'server' | 'client'
+   */
+  authLocation: 'server' | 'client'
+
+  /**
    * Redirect automatically to login page if user is not authenticated
    * @default `true`
    * @type boolean
@@ -97,6 +104,7 @@ export default defineNuxtModule<ModuleOptions>({
     url: process.env.SUPABASE_URL as string,
     key: process.env.SUPABASE_KEY as string,
     serviceKey: process.env.SUPABASE_SERVICE_KEY as string,
+    authLocation: 'server',
     redirect: true,
     redirectOptions: {
       login: '/login',
@@ -147,11 +155,9 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     // ensure callback URL is not using SSR
-    if (options.redirect && options.redirectOptions.callback) {
-      // && options.redirectOptions.login) {
+    if (options.redirect && options.redirectOptions.callback && options.authLocation === 'client') {
       const routeRules: { [key: string]: any } = {}
       routeRules[options.redirectOptions.callback] = { ssr: false }
-      //routeRules[options.redirectOptions.login] = { ssr: false }
       nuxt.options.nitro = defu(nuxt.options.nitro, {
         routeRules,
       })
